@@ -22,56 +22,58 @@ with open(config_path, 'r') as file:
 exp_dir = Path(config["experiment_dir"]) / config["experiment_name"]
 plot_dir = exp_dir / "plots" # save figures here
 plot_dir.mkdir(parents=True, exist_ok=True) # make dir if it doesn't exist
-data_path = exp_dir / "output.nc" # where output from inference was saved
+data_path = exp_dir / "graphcast_output.nc" # where output from inference was saved
 tendency_reversion = config["inference_parameters"]["tendency_reversion"]
 perturbed = config["perturbation_parameters"]["enabled"]
 
 # convenience vars
-n_timesteps = config["inference_parameters"]["n_steps"]
+n_timesteps = config["inference_parameters"]["n_timesteps"]
 lead_times_h = np.arange(0, 6*n_timesteps+1, 6)
 g = 9.81 # m/s^2
 
 # load datasets
 ds = xr.open_dataset(data_path)
-mean_ds = xr.open_dataset(exp_dir/"ic_nc/ic_zt0=288.nc").squeeze().rename({"lat": "latitude", "lon": "longitude"})
+mean_ds = xr.open_dataset(exp_dir/"ic_nc/ic_zt0=288.nc").squeeze()
 perturbed = config["perturbation_parameters"]["enabled"]
 if perturbed:
     ipert_ds = xr.open_dataset(exp_dir/"ic_nc/initial_perturbation.nc").sortby("latitude", ascending=False)
 
 # make pretty plots
-# titles = [f"VAR_2T at t={t*6} hours" for t in range(n_timesteps+1)]
-# vis.create_and_plot_variable_gif(
-#     data=ds["VAR_2T"].isel(ensemble=0),
-#     plot_var="VAR_2T",
-#     iter_var="lead_time",
-#     iter_vals=np.arange(0, n_timesteps+1),
-#     plot_dir=plot_dir,
-#     units="degrees K",
-#     cmap="magma",
-#     titles=titles,
-#     keep_images=False,
-#     dpi=300,
-#     fps=8,
-# )
+titles = [f"VAR_2T at t={t*6} hours" for t in range(n_timesteps+1)]
+vis.create_and_plot_variable_gif(
+    data=ds["VAR_2T"].isel(ensemble=0).squeeze(),
+    plot_var="VAR_2T",
+    iter_var="lead_time",
+    iter_vals=np.arange(0, n_timesteps+1),
+    plot_dir=plot_dir,
+    units="degrees K",
+    cmap="magma",
+    titles=titles,
+    keep_images=False,
+    dpi=300,
+    fps=1,
+    vlims=(200, 350), 
+)
 
-# print(f"Made VAR_2T.gif.")
+print(f"Made VAR_2T.gif.")
 
-# titles = [f"$Z_{{500}}$ at t={t*6} hours" for t in range(n_timesteps+1)]
-# vis.create_and_plot_variable_gif(
-#     data=ds["Z"].isel(ensemble=0).sel(level=500)/(10*g),
-#     plot_var="Z500",
-#     iter_var="lead_time",
-#     iter_vals=np.arange(0, n_timesteps+1),
-#     plot_dir=plot_dir,
-#     units="dam",
-#     cmap="coolwarm",
-#     titles=titles,
-#     keep_images=False,
-#     dpi=300,
-#     fps=8,
-# )
+titles = [f"$Z_{{500}}$ at t={t*6} hours" for t in range(n_timesteps+1)]
+vis.create_and_plot_variable_gif(
+    data=ds["Z"].isel(ensemble=0).squeeze().sel(level=500)/(10*g),
+    plot_var="Z500",
+    iter_var="lead_time",
+    iter_vals=np.arange(0, n_timesteps+1),
+    plot_dir=plot_dir,
+    units="dam",
+    cmap="coolwarm",
+    titles=titles,
+    keep_images=False,
+    dpi=300,
+    fps=1,
+)
 
-# print(f"Made Z500.gif.")
+print(f"Made Z500.gif.")
+exit()
 lim = 16
 # titles = [f"$Z_{{500}}$ at t={t*6} hours (TR={tendency_reversion}, P={perturbed})" for t in range(0, lim, 1)]
 # data = ds["Z"].isel(ensemble=0, zt0=0).sel(level=500)/(10*g)

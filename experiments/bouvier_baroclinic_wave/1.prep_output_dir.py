@@ -1,17 +1,12 @@
 import logging
-import dotenv
 from pathlib import Path
 import yaml
-
-# load the earth2mip environment variables
-dotenv.load_dotenv()
 
 # read configuration
 this_dir = Path(__file__).parent
 config_path = this_dir / "0.config.yaml"
 with open(config_path, 'r') as file:
     config = yaml.safe_load(file)
-ic_params = config["initial_condition_parameters"]
 
 # set up directories
 exp_dir = Path(config["experiment_dir"]) / config["experiment_name"] # all data for experiment stored here
